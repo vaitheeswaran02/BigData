@@ -1,0 +1,46 @@
+jps
+hdfs dfsadmin -safemode get
+hdfs dfs -ls /
+then hive will start (hive>)
+
+Ex=5
+hive> show databases;
+OK
+bigdata
+default
+test
+Time taken: 0.67 seconds, Fetched: 3 row(s)
+hive> use bigdata;
+OK
+Time taken: 0.163 seconds
+hive> CREATE TABLE department(
+    >     id INT,
+    >     dept STRING
+    > )
+    > ROW FORMAT DELIMITED
+    > FIELDS TERMINATED BY ',';
+OK
+Time taken: 1.121 seconds
+hive> exit;
+
+hive> SELECT s.id,
+    >        s.name,
+    >        d.dept
+    > FROM student s
+    > JOIN department d
+    > ON(s.id=d.id);
+hive> CREATE TABLE sales(
+    > id INT,
+    > amount INT
+    > )
+    > PARTITIONED BY(region STRING)
+    > ROW FORMAT DELIMITED
+    > FIELDS TERMINATED BY ',';
+OK
+Time taken: 0.442 seconds
+hive> LOAD DATA LOCAL INPATH '/home/ragavan/sales.csv'
+    > INTO TABLE sales
+    > PARTITION(region='TamilNadu');
+
+ nano ~/sales.csv
+ragavan@ragavan-lap:~/hive-3.1.3$ hive
