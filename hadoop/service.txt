@@ -1,0 +1,85 @@
+Now that Hadoop is configured, here are the commands you'll use regularly.
+
+Start HDFS
+start-dfs.sh
+
+Or explicitly:
+
+$HADOOP_HOME/sbin/start-dfs.sh
+
+Verify it's running:
+
+jps
+
+Expected output:
+
+NameNode
+DataNode
+SecondaryNameNode
+Jps
+Stop HDFS
+stop-dfs.sh
+
+Or:
+
+$HADOOP_HOME/sbin/stop-dfs.sh
+
+Verify:
+
+jps
+
+Expected output:
+
+Jps
+If you also configure YARN later
+
+Start:
+
+start-yarn.sh
+
+Stop:
+
+stop-yarn.sh
+
+Check:
+
+jps
+
+Expected:
+
+NameNode
+DataNode
+SecondaryNameNode
+ResourceManager
+NodeManager
+Jps
+Start both HDFS and YARN
+start-dfs.sh
+start-yarn.sh
+Stop both
+stop-yarn.sh
+stop-dfs.sh
+Check HDFS health
+hdfs dfsadmin -report
+
+This shows:
+
+Total storage
+Used storage
+Available storage
+Live DataNodes
+Browse HDFS
+hdfs dfs -ls /
+Web interfaces
+
+After starting:
+
+HDFS NameNode: http://localhost:9870
+YARN ResourceManager: http://localhost:8088 (after YARN is configured)
+One important thing
+
+Every time you open a new terminal, make sure your Hadoop environment variables are loaded. If you added them to ~/.bashrc, simply open a new terminal or run:
+
+source ~/.bashrc
+
+Then you can use commands like start-dfs.sh and hdfs directly. If you didn't add them permanently yet, I recommend doing that so you don't have to set HADOOP_HOME and JAVA_HOME manually each time.
