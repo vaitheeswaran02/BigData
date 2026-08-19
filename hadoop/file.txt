@@ -1,0 +1,44 @@
+| Task          | Command                          |
+| ------------- | -------------------------------- |
+| Create folder | `hdfs dfs -mkdir /folder`        |
+| Upload file   | `hdfs dfs -put file.txt /folder` |
+| Download file | `hdfs dfs -get /folder/file.txt` |
+| List files    | `hdfs dfs -ls /folder`           |
+| Read file     | `hdfs dfs -cat /folder/file.txt` |
+| Delete file   | `hdfs dfs -rm /folder/file.txt`  |
+| Delete folder | `hdfs dfs -rm -r /folder`        |
+
+Test Hadoop
+1. Create a directory in HDFS
+hdfs dfs -mkdir /lab
+2. List files
+hdfs dfs -ls /
+
+Expected output:
+
+Found 1 items
+drwxr-xr-x   - ragavan supergroup          0 2026-07-17 /lab
+3. Create a local file
+echo "Hello Hadoop" > hello.txt
+4. Upload to HDFS
+hdfs dfs -put hello.txt /lab
+5. List files in HDFS
+hdfs dfs -ls /lab
+6. Read the file
+hdfs dfs -cat /lab/hello.txt
+
+Expected:
+
+Hello Hadoop
+Open the Web UI
+
+Open your browser and visit:
+
+http://localhost:9870
+
+You should see the Hadoop NameNode dashboard where you can:
+
+Browse HDFS
+Check storage usage
+See DataNodes
+View cluster information
