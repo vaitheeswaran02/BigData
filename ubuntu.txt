@@ -1,0 +1,10 @@
+password reset:
+
+press esc key to enter into bias and reset your password,
+go to root option and then type the below command in the cmd.
+
+mount -o remount,rw /
+ls /home
+passwd your password 
+passwd:password updated succesfully
+reboot
