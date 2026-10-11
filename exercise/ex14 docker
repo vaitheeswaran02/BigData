@@ -1,0 +1,46 @@
+Step 1 — Open your project folder
+Run these commands in your Linux terminal:
+cd ~/cicd-demo
+ls
+
+
+Make sure Main.java is present. The filename must match the capital M.
+Step 2 — Create the Dockerfile
+Run:
+nano Dockerfile
+
+
+Paste this code:
+
+FROM eclipse-temurin:17-jdk
+
+WORKDIR /app
+
+COPY Main.java .
+
+RUN javac Main.java
+
+CMD ["java", "Main"]
+
+
+
+Save the file using Ctrl + O, press Enter, and exit with Ctrl + X.
+Step 3 — Build the Docker image
+Run:
+docker build -t cicd-java-app:1.0 .
+
+
+Docker will download the Java 17 base image if needed, compile your program, and create the image.
+Step 4 — Run the container
+docker run --rm cicd-java-app:1.0
+
+
+Expected output:
+CI/CD Pipeline using Java is working successfully!
+
+
+Step 5 — Verify the image
+docker images
+
+
+You should see cicd-java-app in the image list.
