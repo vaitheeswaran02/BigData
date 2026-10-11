@@ -1,0 +1,47 @@
+ceate main .java in an repo and paste this 
+
+public class Main {
+    public static void main(String[] args) {
+        System.out.println(
+            "CI/CD Pipeline using Java is working successfully!"
+        );
+    }
+}
+
+step2: create .yml file 
+
+name: Java CI-CD Pipeline
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build-test-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Build Java application
+        run: javac Main.java
+
+      - name: Test Java application
+        run: java Main
+
+      - name: Deploy application
+        run: |
+          mkdir -p deployed
+          cp Main.class deployed/
+          echo "Application deployed successfully!"
+
+
+          
