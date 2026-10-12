@@ -1,0 +1,14 @@
+Step 1: Check Git installation
+Open your terminal and run:
+git --version
+
+Step 2: Configure Git
+Set your GitHub username and email. Replace the examples with your own details.
+git config --global user.name "Your GitHub Username"
+git config --global user.email "your-email@example.com"
+
+
+Verify:
+git config --global --list
+
+git hub crete brancha and make merge the branch 
