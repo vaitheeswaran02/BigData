@@ -4,3 +4,23 @@ spy spark
 hive 
 hadoop 
 scala 
+
+
+==================================================================
+command to start prometheus
+
+Run this command to start Prometheus on Ubuntu:
+sudo systemctl start prometheus
+
+
+To check whether it is running:
+sudo systemctl status prometheus
+
+
+To start Prometheus automatically whenever your system boots:
+sudo systemctl enable prometheus
+
+
+Open the web interface in your browser:
+
+**http://localhost:9090**
