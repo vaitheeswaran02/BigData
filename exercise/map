@@ -1,0 +1,209 @@
+method 1 (using java code)
+2. Check Hadoop installation
+Open your terminal and execute:
+hadoop version
+
+
+If Hadoop is installed and configured, it displays the Hadoop version.
+
+If your laboratory uses Hadoop in pseudo-distributed mode, make sure HDFS is running before proceeding.
+3. Create the exercise directory
+mkdir -p ~/wordcount
+cd ~/wordcount
+
+
+Create an input file:
+nano input.txt
+
+
+Enter the following text:
+hello hadoop
+hello spark
+hadoop big data
+big data hadoop
+
+
+Save the file using Ctrl + O, press Enter, and exit with Ctrl + X.
+4. Write the Java MapReduce program
+Create the Java file:
+nano WordCount.java
+
+
+Paste this code:
+import java.io.IOException;
+import java.util.StringTokenizer;
+
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapreduce.Job;
+import org.apache.hadoop.mapreduce.Mapper;
+import org.apache.hadoop.mapreduce.Reducer;
+import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
+
+public class WordCount {
+
+    public static class TokenizerMapper
+        extends Mapper<Object, Text, Text, IntWritable> {
+
+        private final static IntWritable one =
+            new IntWritable(1);
+
+        private Text word = new Text();
+
+        public void map(Object key, Text value,
+                        Context context)
+            throws IOException, InterruptedException {
+
+            StringTokenizer itr =
+                new StringTokenizer(value.toString());
+
+            while (itr.hasMoreTokens()) {
+                word.set(itr.nextToken());
+                context.write(word, one);
+            }
+        }
+    }
+
+    public static class IntSumReducer
+        extends Reducer<Text, IntWritable, Text, IntWritable> {
+
+        private IntWritable result = new IntWritable();
+
+        public void reduce(Text key,
+                           Iterable<IntWritable> values,
+                           Context context)
+            throws IOException, InterruptedException {
+
+            int sum = 0;
+
+            for (IntWritable val : values) {
+                sum += val.get();
+            }
+
+            result.set(sum);
+            context.write(key, result);
+        }
+    }
+
+    public static void main(String[] args) throws Exception {
+
+        Configuration conf = new Configuration();
+        Job job = Job.getInstance(conf, "word count");
+
+        job.setJarByClass(WordCount.class);
+        job.setMapperClass(TokenizerMapper.class);
+        job.setCombinerClass(IntSumReducer.class);
+        job.setReducerClass(IntSumReducer.class);
+
+        job.setOutputKeyClass(Text.class);
+        job.setOutputValueClass(IntWritable.class);
+
+        FileInputFormat.addInputPath(
+            job, new Path(args[0]));
+
+        FileOutputFormat.setOutputPath(
+            job, new Path(args[1]));
+
+        System.exit(job.waitForCompletion(true) ? 0 : 1);
+    }
+}
+
+
+Save and exit.
+5. Compile the Java program
+If Hadoop is configured correctly, run:
+hadoop com.sun.tools.javac.Main WordCount.java
+
+
+Then package the compiled classes into a JAR:
+jar cf wordcount.jar WordCount*.class
+
+
+If the compilation command fails because your Hadoop distribution does not provide the compiler, compile using the Hadoop JAR classpath and javac instead.
+6. Run the MapReduce job
+First, create the input directory in HDFS:
+hdfs dfs -mkdir -p /user/$USER/wordcount/input
+
+
+Upload the text file:
+hdfs dfs -put input.txt /user/$USER/wordcount/input/
+
+
+Run the program:
+hadoop jar wordcount.jar WordCount \
+/user/$USER/wordcount/input \
+/user/$USER/wordcount/output
+
+
+The output directory must not already exist. If you have run the exercise before, remove its previous output first:
+hdfs dfs -rm -r /user/$USER/wordcount/output
+
+
+Run the Hadoop command again.
+7. Display the output
+hdfs dfs -cat /user/$USER/wordcount/output/part-r-00000
+
+
+Expected result:
+big     2
+data    2
+hadoop  3
+hello   2
+spark   1
+
+
+========================================================
+
+method 2 (using hadoop build in method)
+
+Method 1: Use Hadoop's built-in WordCount example (easiest)
+Hadoop provides a ready-made WordCount example JAR, so you don't need to write Java code.
+Step 1: Check Hadoop
+hadoop version
+
+
+Step 2: Find the example JAR
+find $HADOOP_HOME -name 'hadoop-mapreduce-examples*.jar'
+
+
+If it returns a path, copy that path for the next step.
+Step 3: Create the input file
+mkdir -p ~/wordcount/input
+cd ~/wordcount
+nano input.txt
+
+
+Enter:
+hello hadoop
+hello spark
+hadoop big data
+
+
+Save with Ctrl + O, press Enter, then Ctrl + X.
+Step 4: Upload the input to HDFS
+hdfs dfs -mkdir -p /wordcount/input
+hdfs dfs -put input.txt /wordcount/input/
+
+
+Step 5: Run WordCount
+Replace /path/to/hadoop-mapreduce-examples.jar with the actual JAR path found in Step 2.
+hadoop jar /path/to/hadoop-mapreduce-examples.jar \
+wordcount /wordcount/input /wordcount/output
+
+
+Step 6: Display the result
+hdfs dfs -cat /wordcount/output/part-r-00000
+
+
+Expected output:
+big     1
+data    1
+hadoop  2
+hello   2
+spark   1
+
+
+*** this is only for word count ***
