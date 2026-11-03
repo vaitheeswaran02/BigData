@@ -1,0 +1,389 @@
+4. Practical implementation
+We'll perform the entire exercise in Ubuntu using Hive.
+Step 1: Start Hadoop services
+Open your Ubuntu terminal.
+
+Start HDFS:
+start-dfs.sh
+
+
+Check the services:
+jps
+
+
+If you are using YARN:
+start-yarn.sh
+
+
+Step 2: Create the movie dataset
+Create a working directory:
+mkdir -p ~/BigData/Hive
+cd ~/BigData/Hive
+
+
+Create the dataset file:
+nano movies.txt
+
+
+Enter the following data. The columns are separated by TAB characters.
+1	Avatar	Action,Adventure	2009	7.9	2923	James Cameron	English
+2	Avengers	Endgame	Action,Sci-Fi	2019	8.4	2797	Russo Brothers	English
+3	Titanic	Romance,Drama	1997	7.9	2200	James Cameron	English
+4	Jawan	Action,Thriller	2023	7.5	1100	Atlee	Tamil
+5	Leo	Action,Drama	2023	7.8	620	Lokesh Kanagaraj	Tamil
+6	Interstellar	Sci-Fi,Drama	2014	8.7	730	Christopher Nolan	English
+7	Baahubali	Action,Drama	2015	8.0	650	Rajamouli	Telugu
+8	Dangal	Sports,Drama	2016	8.3	2024	Nitesh Tiwari	Hindi
+9	KGF	Action,Crime	2018	8.2	1200	Prashanth Neel	Kannada
+10	3Idiots	Comedy,Drama	2009	8.4	460	Rajkumar Hirani	Hindi
+
+
+Save using Ctrl + O, Enter, and Ctrl + X.
+
+Check the file:
+cat movies.txt
+
+
+Note: These are illustrative sample records, not verified real-world box-office figures. Collection is expressed in crores.
+Step 3: Open Hive
+Try:
+hive
+
+
+If you are using HiveServer2 instead, connect through Beeline:
+beeline -u jdbc:hive2://localhost:10000/default
+
+
+You should see the Hive prompt:
+hive>
+
+
+Step 4: Create a database
+Create a database named movie_db.
+CREATE DATABASE movie_db;
+
+
+Select the database:
+USE movie_db;
+
+
+Verify:
+SHOW DATABASES;
+
+
+Step 5: Create a movie table using primitive data types
+Execute:
+CREATE TABLE movies (
+    movie_id INT,
+    movie_name STRING,
+    genre STRING,
+    release_year INT,
+    rating DOUBLE,
+    collection_cr DOUBLE,
+    director STRING,
+    language STRING
+)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY '\t'
+STORED AS TEXTFILE;
+
+
+Here:
+- CREATE TABLE creates the table.
+- INT stores integer values.
+- STRING stores text.
+- DOUBLE stores decimal values.
+- FIELDS TERMINATED BY '\t' tells Hive that each column is separated by a tab.
+- STORED AS TEXTFILE stores the records as text files.
+Verify the table:
+SHOW TABLES;
+
+
+Check its structure:
+DESCRIBE movies;
+
+
+Step 6: Load the dataset into Hive
+Execute:
+LOAD DATA LOCAL INPATH
+'/home/YOUR_USERNAME/BigData/Hive/movies.txt'
+INTO TABLE movies;
+
+
+Replace YOUR_USERNAME with your actual Ubuntu username.
+
+For example, if your username is gowtham:
+LOAD DATA LOCAL INPATH
+'/home/gowtham/BigData/Hive/movies.txt'
+INTO TABLE movies;
+
+
+Verify the loaded records:
+SELECT * FROM movies;
+
+
+Check the number of records:
+SELECT COUNT(*) FROM movies;
+
+
+Expected result:
+10
+
+
+Dataset loaded successfully
+
+5. Perform basic data analysis using primitive data types
+Now we'll perform the main analysis operations.
+Operation 1: Display all movies
+SELECT * FROM movies;
+
+
+Purpose: Displays all records from the movie table.
+Operation 2: List the top 5 highest-collection movies
+SELECT movie_name, collection_cr
+FROM movies
+ORDER BY collection_cr DESC
+LIMIT 5;
+
+
+Explanation:
+- ORDER BY sorts the records.
+- DESC sorts in descending order.
+- LIMIT 5 displays only five records.
+Expected output:
+Movie	Collection (Cr)
+Avatar	2923
+Avengers Endgame	2797
+Titanic	2200
+Dangal	2024
+KGF	1200
+
+Operation 3: Find the maximum movie collection
+SELECT MAX(collection_cr)
+FROM movies;
+
+
+Expected output:
+2923
+
+
+To find the movie name along with its maximum collection:
+SELECT movie_name, collection_cr
+FROM movies
+WHERE collection_cr = (
+    SELECT MAX(collection_cr)
+    FROM movies
+);
+
+
+Expected output:
+Avatar    2923
+
+
+Operation 4: Find the average movie collection
+SELECT AVG(collection_cr)
+FROM movies;
+
+
+Expected output:
+1470.4
+
+
+Operation 5: Find the total number of movies
+SELECT COUNT(*)
+FROM movies;
+
+
+Expected output:
+10
+
+
+Operation 6: Find movies released after 2020
+SELECT movie_name, release_year
+FROM movies
+WHERE release_year > 2020;
+
+
+Expected output:
+Jawan    2023
+Leo      2023
+
+
+Operation 7: Find average collection by language
+SELECT language, AVG(collection_cr)
+FROM movies
+GROUP BY language;
+
+
+Purpose: Groups movies by language and calculates the average collection for each language.
+Operation 8: Find the highest-rated movies
+SELECT movie_name, rating
+FROM movies
+ORDER BY rating DESC
+LIMIT 5;
+
+
+Operation 9: Find the total collection by genre
+SELECT genre, SUM(collection_cr)
+FROM movies
+GROUP BY genre;
+
+
+Note: This groups by the entire genre string. A movie with multiple genres will be treated as one combined genre value. We'll separate individual genres using ARRAY and EXPLODE in the advanced section.
+
+6. Advanced data analysis using complex data types
+Now we'll work with ARRAY, MAP and STRUCT.
+
+Instead of storing only simple primitive values, we'll create another Hive table containing complex data types.
+Step 1: Create an advanced table
+Execute:
+CREATE TABLE advanced_movies AS
+SELECT
+    movie_id,
+    movie_name,
+    SPLIT(genre, ',') AS genres,
+    MAP(
+        'language', language,
+        'director', director
+    ) AS movie_details,
+    NAMED_STRUCT(
+        'year', release_year,
+        'rating', rating,
+        'collection', collection_cr
+    ) AS movie_info
+FROM movies;
+
+
+Let's understand this query.
+Column	Type	Purpose
+genres	ARRAY	Stores multiple genres
+movie_details	MAP	Stores language and director as key-value pairs
+movie_info	STRUCT	Stores year, rating and collection together
+
+For example, one movie's advanced record conceptually looks like:
+genres:
+["Action", "Adventure"]
+
+movie_details:
+{
+  "language": "English",
+  "director": "James Cameron"
+}
+
+movie_info:
+{
+  year: 2009,
+  rating: 7.9,
+  collection: 2923
+}
+
+
+Verify:
+DESCRIBE advanced_movies;
+
+
+View records:
+SELECT * FROM advanced_movies;
+
+
+Step 2: ARRAY operations
+An ARRAY stores multiple values in a single column.
+
+A. Display all genres
+SELECT movie_name, genres
+FROM advanced_movies;
+
+
+B. Access a particular array element
+SELECT movie_name, genres[0]
+FROM advanced_movies;
+
+
+Array indexing starts at 0 in Hive.
+
+C. Find movies containing the Action genre
+SELECT movie_name, genres
+FROM advanced_movies
+WHERE ARRAY_CONTAINS(genres, 'Action');
+
+
+D. Separate genres into individual records
+SELECT movie_name, genre_name
+FROM advanced_movies
+LATERAL VIEW EXPLODE(genres) g AS genre_name;
+
+
+This is particularly useful for genre-wise analysis.
+Step 3: MAP operations
+A MAP stores key-value pairs.
+
+A. Access the language
+SELECT
+    movie_name,
+    movie_details['language']
+FROM advanced_movies;
+
+
+B. Access the director
+SELECT
+    movie_name,
+    movie_details['director']
+FROM advanced_movies;
+
+
+C. Display all map keys
+SELECT
+    movie_name,
+    MAP_KEYS(movie_details)
+FROM advanced_movies;
+
+
+Step 4: STRUCT operations
+A STRUCT stores multiple named fields.
+
+A. Display movie year and rating
+SELECT
+    movie_name,
+    movie_info.year,
+    movie_info.rating
+FROM advanced_movies;
+
+
+B. Find the movie with maximum collection using STRUCT
+SELECT
+    movie_name,
+    movie_info.collection
+FROM advanced_movies
+ORDER BY movie_info.collection DESC
+LIMIT 1;
+
+
+Expected output:
+Avatar    2923
+
+
+Step 5: Advanced analysis using window functions
+Window functions are useful for ranking and analytical operations.
+
+Rank movies based on collection:
+SELECT
+    movie_name,
+    collection_cr,
+    RANK() OVER (
+        ORDER BY collection_cr DESC
+    ) AS movie_rank
+FROM movies;
+
+
+Find the top 5 movies using ranking:
+SELECT movie_name, collection_cr, movie_rank
+FROM (
+    SELECT
+        movie_name,
+        collection_cr,
+        RANK() OVER (
+            ORDER BY collection_cr DESC
+        ) AS movie_rank
+    FROM movies
+) ranked
+WHERE movie_rank <= 5;
