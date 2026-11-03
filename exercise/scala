@@ -1,0 +1,251 @@
+1.2 What is Immutability?
+Immutability means that once a collection is created, its contents cannot be changed.
+
+Example:
+val numbers = List(10, 20, 30)
+
+
+We cannot modify the existing list.
+
+Instead, operations create a new collection:
+val newNumbers = numbers :+ 40
+
+
+Now:
+Original: List(10, 20, 30)
+New:      List(10, 20, 30, 40)
+
+
+Important: val prevents reassignment of a variable. It does not automatically make every object immutable. Scala also provides mutable collections.
+1.3 What is Functional Programming?
+Functional Programming is a programming paradigm where we use functions to transform and process data.
+
+Instead of writing lengthy loops, we can use functions such as:
+Function	Purpose
+map()	Transform every element
+filter()	Select elements based on a condition
+reduce()	Combine elements into one value
+flatMap()	Transform and flatten collections
+foreach()	Perform an operation on every element
+sorted	Sort elements
+fold()	Combine elements using an initial value
+
+Example:
+val numbers = List(1, 2, 3, 4, 5)
+
+val result = numbers.map(x => x * 2)
+
+println(result)
+
+
+Output:
+List(2, 4, 6, 8, 10)
+
+
+Here, x => x * 2 is a lambda expression (anonymous function).
+
+2. Practical implementation – Collections
+We'll write a single Scala program that demonstrates all the important collection types.
+Step 1: Create a project directory
+Open Ubuntu terminal:
+mkdir -p ~/BigData/Scala
+cd ~/BigData/Scala
+
+
+Step 2: Create the Scala file
+nano CollectionsDemo.scala
+
+
+Step 3: Write the program
+
+object CollectionsDemo {
+
+  def main(args: Array[String]): Unit = {
+
+    // 1. LIST
+    println("----- LIST -----")
+
+    val numbers = List(10, 20, 30, 40, 50)
+
+    println("List: " + numbers)
+    println("First Element: " + numbers.head)
+    println("Last Element: " + numbers.last)
+    println("List Length: " + numbers.length)
+
+    // 2. SET
+    println("\n----- SET -----")
+
+    val values = Set(10, 20, 30, 20, 10)
+
+    println("Set: " + values)
+    println("Contains 20: " + values.contains(20))
+    println("Unique Elements: " + values.size)
+
+    // 3. MAP
+    println("\n----- MAP -----")
+
+    val students = Map(
+      "Arun" -> 85,
+      "Priya" -> 90,
+      "Kumar" -> 75
+    )
+
+    println("Students: " + students)
+    println("Arun Marks: " + students("Arun"))
+    println("All Keys: " + students.keys)
+    println("All Values: " + students.values)
+
+    // 4. TUPLE
+    println("\n----- TUPLE -----")
+
+    val student = (101, "Gowtham", 90)
+
+    println("Student ID: " + student._1)
+    println("Student Name: " + student._2)
+    println("Student Marks: " + student._3)
+
+    // 5. ARRAY
+    println("\n----- ARRAY -----")
+
+    val arr = Array(10, 20, 30, 40)
+
+    println("Array Elements:")
+    arr.foreach(println)
+
+    println("First Element: " + arr(0))
+  }
+}
+
+
+
+Save the file using Ctrl + O, Enter and Ctrl + X.
+Step 4: Compile the program
+First check Scala:
+scala -version
+
+
+For Scala 2.x, compile using:
+scalac CollectionsDemo.scala
+
+
+This generates .class files.
+Step 5: Run the program
+scala CollectionsDemo
+
+
+For Scala 2.x, you can also run:
+scala CollectionsDemo.scala
+
+
+Expected output:
+----- LIST -----
+List: List(10, 20, 30, 40, 50)
+First Element: 10
+Last Element: 50
+List Length: 5
+
+----- SET -----
+Set: Set(10, 20, 30)
+Contains 20: true
+Unique Elements: 3
+
+----- MAP -----
+Students: Map(Arun -> 85, Priya -> 90, Kumar -> 75)
+Arun Marks: 85
+
+----- TUPLE -----
+Student ID: 101
+Student Name: Gowtham
+Student Marks: 90
+
+----- ARRAY -----
+Array Elements:
+10
+20
+30
+40
+First Element: 10
+
+
+Note: The order of elements printed from a Set or Map is not guaranteed in every implementation.
+3. Practical implementation – Functional Programming
+Now we'll write another program to demonstrate functional programming operations.
+Step 1: Create a Scala file
+nano FunctionalDemo.scala
+
+
+Step 2: Write the program
+
+object FunctionalDemo {
+
+  def main(args: Array[String]): Unit = {
+
+    val numbers = List(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
+
+    println("Original List: " + numbers)
+
+    // 1. MAP
+    println("\n----- MAP -----")
+
+    val doubled = numbers.map(x => x * 2)
+
+    println("Doubled Numbers: " + doubled)
+
+    // 2. FILTER
+    println("\n----- FILTER -----")
+
+    val evenNumbers = numbers.filter(x => x % 2 == 0)
+
+    println("Even Numbers: " + evenNumbers)
+
+    // 3. REDUCE
+    println("\n----- REDUCE -----")
+
+    val sum = numbers.reduce((a, b) => a + b)
+
+    println("Sum: " + sum)
+
+    // 4. FOREACH
+    println("\n----- FOREACH -----")
+
+    numbers.foreach(x => println(x))
+
+    // 5. FLATMAP
+    println("\n----- FLATMAP -----")
+
+    val result = List(1, 2, 3).flatMap(
+      x => List(x, x * 10)
+    )
+
+    println("FlatMap Result: " + result)
+
+    // 6. SORTED
+    println("\n----- SORTED -----")
+
+    val marks = List(80, 45, 95, 60, 75)
+
+    println("Ascending: " + marks.sorted)
+    println("Descending: " + marks.sorted.reverse)
+
+    // 7. FOLD
+    println("\n----- FOLD -----")
+
+    val total = numbers.fold(0)((a, b) => a + b)
+
+    println("Total using Fold: " + total)
+
+    // 8. LAMBDA EXPRESSION
+    println("\n----- LAMBDA -----")
+
+    val square = (x: Int) => x * x
+
+    println("Square of 5: " + square(5))
+  }
+}
+
+
+
+Step 3: Execute the program
+If you are using Scala 2.x:
+scalac FunctionalDemo.scala
+scala FunctionalDemo
