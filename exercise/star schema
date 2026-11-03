@@ -1,0 +1,392 @@
+Star Schema architecture for our exercise
+We'll implement the following structure.
+Retail Sales Star Schema
+dim_date
+
+PK: date_id
+
+date, month, year, quarter
+
+
+dim_product
+
+PK: product_id
+
+name, category, brand
+
+
+dim_customer
+
+PK: customer_id
+
+name, gender, city
+
+
+dim_store
+
+PK: store_id
+
+name, city, state, region
+
+
+
+fact_sales
+Central Fact Table
+sales_id, date_id, product_id, customer_id, store_id
+
+quantity, unit_price, discount, total_amount
+
+Four dimension tables connect to one central sales fact table through their keys.
+4. Practical implementation using Apache Hive
+We'll create five tables:
+- fact_sales
+- dim_date
+- dim_product
+- dim_customer
+- dim_store
+We'll use a small retail sales dataset so you can execute the practical directly in Hive.
+Step 1: Start Hadoop and Hive
+Open your Ubuntu terminal.
+
+Start HDFS:
+start-dfs.sh
+
+
+Verify:
+jps
+
+
+Open Hive:
+hive
+
+
+Alternatively, connect using Beeline if HiveServer2 is running:
+beeline -u jdbc:hive2://localhost:10000/default
+
+
+Step 2: Create a database
+CREATE DATABASE retail_dw;
+
+
+Select the database:
+USE retail_dw;
+
+
+Verify:
+SHOW DATABASES;
+
+
+Step 3: Create the Date Dimension Table
+CREATE TABLE dim_date (
+    date_id INT,
+    full_date STRING,
+    day INT,
+    month STRING,
+    quarter INT,
+    year INT
+)
+STORED AS ORC;
+
+
+Explanation:
+- date_id: Unique date identifier.
+- full_date: Actual calendar date.
+- day: Day of the month.
+- month: Month name.
+- quarter: Financial/calendar quarter.
+- year: Calendar year.
+Insert sample data:
+INSERT INTO TABLE dim_date VALUES
+(20260101, '2026-01-01', 1, 'January', 1, 2026),
+(20260102, '2026-01-02', 2, 'January', 1, 2026),
+(20260201, '2026-02-01', 1, 'February', 1, 2026),
+(20260301, '2026-03-01', 1, 'March', 1, 2026),
+(20260401, '2026-04-01', 1, 'April', 2, 2026);
+
+
+Verify:
+SELECT * FROM dim_date;
+
+
+Step 4: Create the Product Dimension Table
+CREATE TABLE dim_product (
+    product_id INT,
+    product_name STRING,
+    category STRING,
+    brand STRING,
+    unit_price DOUBLE
+)
+STORED AS ORC;
+
+
+Insert records:
+INSERT INTO TABLE dim_product VALUES
+(101, 'Laptop', 'Electronics', 'HP', 50000),
+(102, 'Mobile', 'Electronics', 'Samsung', 20000),
+(103, 'Shirt', 'Clothing', 'Nike', 1500),
+(104, 'Shoes', 'Footwear', 'Adidas', 3000),
+(105, 'Headphones', 'Electronics', 'Sony', 2500),
+(106, 'Watch', 'Accessories', 'Titan', 4000);
+
+
+Verify:
+SELECT * FROM dim_product;
+
+
+Step 5: Create the Customer Dimension Table
+CREATE TABLE dim_customer (
+    customer_id INT,
+    customer_name STRING,
+    gender STRING,
+    age INT,
+    city STRING
+)
+STORED AS ORC;
+
+
+Insert sample records:
+INSERT INTO TABLE dim_customer VALUES
+(201, 'Arun', 'Male', 25, 'Chennai'),
+(202, 'Priya', 'Female', 30, 'Coimbatore'),
+(203, 'Kumar', 'Male', 35, 'Madurai'),
+(204, 'Divya', 'Female', 28, 'Salem'),
+(205, 'Rahul', 'Male', 40, 'Trichy');
+
+
+Verify:
+SELECT * FROM dim_customer;
+
+
+Step 6: Create the Store Dimension Table
+CREATE TABLE dim_store (
+    store_id INT,
+    store_name STRING,
+    city STRING,
+    state STRING,
+    region STRING
+)
+STORED AS ORC;
+
+
+Insert records:
+INSERT INTO TABLE dim_store VALUES
+(301, 'Chennai Central Store', 'Chennai', 'Tamil Nadu', 'South'),
+(302, 'Coimbatore Mall Store', 'Coimbatore', 'Tamil Nadu', 'South'),
+(303, 'Madurai Retail Store', 'Madurai', 'Tamil Nadu', 'South'),
+(304, 'Bangalore City Store', 'Bangalore', 'Karnataka', 'South'),
+(305, 'Mumbai Main Store', 'Mumbai', 'Maharashtra', 'West');
+
+
+Verify:
+SELECT * FROM dim_store;
+
+
+Step 7: Create the central Sales Fact Table
+This is the most important table in our Star Schema.
+CREATE TABLE fact_sales (
+    sales_id INT,
+    date_id INT,
+    product_id INT,
+    customer_id INT,
+    store_id INT,
+    quantity INT,
+    unit_price DOUBLE,
+    discount DOUBLE,
+    total_amount DOUBLE
+)
+STORED AS ORC;
+
+
+Explanation:
+Column	Description
+sales_id	Unique sales transaction line ID
+date_id	References dim_date
+product_id	References dim_product
+customer_id	References dim_customer
+store_id	References dim_store
+quantity	Number of units purchased
+unit_price	Actual unit selling price
+discount	Total discount for the line
+total_amount	Net sales amount
+
+The calculation is:
+\[
+\text{Total Amount} =
+(\text{Quantity}\times\text{Unit Price})-\text{Discount}
+\]
+
+Insert sample transactions:
+INSERT INTO TABLE fact_sales VALUES
+(1, 20260101, 101, 201, 301, 1, 50000, 2000, 48000),
+(2, 20260101, 102, 202, 302, 2, 20000, 1000, 39000),
+(3, 20260102, 103, 203, 303, 3, 1500, 200, 4300),
+(4, 20260201, 104, 204, 301, 2, 3000, 300, 5700),
+(5, 20260201, 105, 205, 304, 2, 2500, 200, 4800),
+(6, 20260301, 101, 201, 302, 1, 50000, 1000, 49000),
+(7, 20260301, 106, 202, 305, 2, 4000, 500, 7500),
+(8, 20260401, 102, 203, 301, 1, 20000, 500, 19500),
+(9, 20260401, 103, 204, 302, 2, 1500, 100, 2900),
+(10, 20260401, 104, 205, 303, 1, 3000, 0, 3000);
+
+
+Verify:
+SELECT * FROM fact_sales;
+
+
+Star Schema created
+Important database note: We are using the dimension IDs as primary-key-like identifiers and fact-table references as foreign-key-like identifiers. Hive generally does not enforce primary-key and foreign-key constraints for ordinary tables. You must maintain uniqueness and referential integrity during data loading.
+
+5. Perform data analysis using Star Schema
+Now we have all five tables. We'll join the fact table with dimensions to perform business analysis.
+Operation 1: Display complete retail sales information
+SELECT
+    f.sales_id,
+    d.full_date,
+    p.product_name,
+    c.customer_name,
+    s.store_name,
+    f.quantity,
+    f.total_amount
+FROM fact_sales f
+JOIN dim_date d
+    ON f.date_id = d.date_id
+JOIN dim_product p
+    ON f.product_id = p.product_id
+JOIN dim_customer c
+    ON f.customer_id = c.customer_id
+JOIN dim_store s
+    ON f.store_id = s.store_id;
+
+
+Purpose: Combines information from all five tables.
+Operation 2: Find total sales revenue
+SELECT SUM(total_amount) AS total_revenue
+FROM fact_sales;
+
+
+Expected output:
+193700
+
+
+Operation 3: Find the highest-selling product
+SELECT
+    p.product_name,
+    SUM(f.total_amount) AS total_sales
+FROM fact_sales f
+JOIN dim_product p
+    ON f.product_id = p.product_id
+GROUP BY p.product_name
+ORDER BY total_sales DESC
+LIMIT 5;
+
+
+Purpose: Identifies the products generating the highest revenue.
+Operation 4: Find category-wise sales
+SELECT
+    p.category,
+    SUM(f.total_amount) AS category_revenue
+FROM fact_sales f
+JOIN dim_product p
+    ON f.product_id = p.product_id
+GROUP BY p.category
+ORDER BY category_revenue DESC;
+
+
+Operation 5: Find store-wise sales
+SELECT
+    s.store_name,
+    SUM(f.total_amount) AS total_sales
+FROM fact_sales f
+JOIN dim_store s
+    ON f.store_id = s.store_id
+GROUP BY s.store_name
+ORDER BY total_sales DESC;
+
+
+Operation 6: Find monthly sales
+SELECT
+    d.month,
+    SUM(f.total_amount) AS monthly_sales
+FROM fact_sales f
+JOIN dim_date d
+    ON f.date_id = d.date_id
+GROUP BY d.month
+ORDER BY MIN(d.date_id);
+
+
+Operation 7: Find customer-wise total purchases
+SELECT
+    c.customer_name,
+    SUM(f.total_amount) AS total_purchase
+FROM fact_sales f
+JOIN dim_customer c
+    ON f.customer_id = c.customer_id
+GROUP BY c.customer_name
+ORDER BY total_purchase DESC;
+
+
+Operation 8: Find total quantity sold by product
+SELECT
+    p.product_name,
+    SUM(f.quantity) AS total_quantity
+FROM fact_sales f
+JOIN dim_product p
+    ON f.product_id = p.product_id
+GROUP BY p.product_name
+ORDER BY total_quantity DESC;
+
+
+Operation 9: Find sales by region
+SELECT
+    s.region,
+    SUM(f.total_amount) AS regional_sales
+FROM fact_sales f
+JOIN dim_store s
+    ON f.store_id = s.store_id
+GROUP BY s.region;
+
+
+Operation 10: Find the highest sales transaction
+SELECT
+    sales_id,
+    total_amount
+FROM fact_sales
+ORDER BY total_amount DESC
+LIMIT 1;
+
+
+Expected result:
+6    49000
+
+
+6. Verify the Star Schema
+Display all tables:
+SHOW TABLES;
+
+
+You should see:
+dim_customer
+dim_date
+dim_product
+dim_store
+fact_sales
+
+
+Check table structures:
+DESCRIBE fact_sales;
+DESCRIBE dim_product;
+DESCRIBE dim_customer;
+DESCRIBE dim_store;
+DESCRIBE dim_date;
+
+
+Check the number of records:
+SELECT COUNT(*) FROM fact_sales;
+
+
+Expected:
+10
+
+
+Correct expected total sales revenue:
+183700
