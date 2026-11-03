@@ -1,0 +1,339 @@
+3. Practical implementation – Scala OOP
+We'll implement a Student Management example covering classes, objects, constructors, encapsulation, inheritance and polymorphism.
+Step 1: Create a project directory
+mkdir -p ~/BigData/Scala
+cd ~/BigData/Scala
+
+
+Step 2: Create the Scala program
+nano OOPDemo.scala
+
+
+Step 3: Write the program
+
+// Parent class
+class Person(val name: String, val age: Int) {
+
+    def display(): Unit = {
+        println("Name: " + name)
+        println("Age: " + age)
+    }
+}
+
+// Child class
+class Student(name: String, age: Int,
+              val department: String)
+    extends Person(name, age) {
+
+    override def display(): Unit = {
+        super.display()
+        println("Department: " + department)
+    }
+}
+
+// Main object
+object OOPDemo {
+
+    def main(args: Array[String]): Unit = {
+
+        // Creating object
+        val s1 = new Student(
+            "Gowtham", 22, "CSE"
+        )
+
+        println("----- STUDENT DETAILS -----")
+
+        s1.display()
+    }
+}
+
+
+
+Step 4: Understand the program
+Person class: This is the parent class. It stores name and age.
+
+Student class: This is the child class. It inherits Person using extends.
+
+override: The Student class provides its own implementation of display().
+
+super.display(): Calls the parent class implementation.
+
+OOPDemo object: Contains the main method and creates the Student object.
+Step 5: Compile and execute
+For Scala 2.x:
+scalac OOPDemo.scala
+
+
+Run:
+scala OOPDemo
+
+
+For Scala CLI:
+scala OOPDemo.scala
+
+
+Expected output:
+----- STUDENT DETAILS -----
+Name: Gowtham
+Age: 22
+Department: CSE
+
+
+
+4. Practical implementation – Encapsulation
+Encapsulation means protecting internal data and accessing it through controlled methods.
+
+Create a file:
+nano EncapsulationDemo.scala
+
+
+Program:
+
+class BankAccount {
+
+    private var balance: Double = 0.0
+
+    // Deposit money
+    def deposit(amount: Double): Unit = {
+        if (amount > 0) {
+            balance += amount
+            println("Amount deposited: " + amount)
+        } else {
+            println("Invalid amount")
+        }
+    }
+
+    // Withdraw money
+    def withdraw(amount: Double): Unit = {
+        if (amount > 0 && amount <= balance) {
+            balance -= amount
+            println("Amount withdrawn: " + amount)
+        } else {
+            println("Invalid withdrawal")
+        }
+    }
+
+    // Display balance
+    def getBalance(): Double = {
+        balance
+    }
+}
+
+object EncapsulationDemo {
+
+    def main(args: Array[String]): Unit = {
+
+        val account = new BankAccount()
+
+        account.deposit(5000)
+        account.withdraw(1000)
+
+        println("Current Balance: " +
+            account.getBalance())
+    }
+}
+
+
+
+Execute:
+scala EncapsulationDemo.scala
+
+
+Expected output:
+Amount deposited: 5000.0
+Amount withdrawn: 1000.0
+Current Balance: 4000.0
+
+
+Important: The balance variable is private. We cannot directly access or modify it outside the class.
+
+5. Practical implementation – Traits
+Now let's implement the main trait concept.
+
+We'll create two traits:
+- Printable
+- Logger
+Two classes will reuse these traits.
+Step 1: Create the file
+nano TraitDemo.scala
+
+
+Step 2: Write the program
+
+// First Trait
+trait Printable {
+
+    def printDetails(): Unit = {
+        println("Printing student details")
+    }
+}
+
+// Second Trait
+trait Logger {
+
+    def log(): Unit = {
+        println("Student activity logged")
+    }
+}
+
+// Class using multiple traits
+class Student extends Printable with Logger {
+
+    def display(): Unit = {
+        println("Student Name: Gowtham")
+        println("Department: CSE")
+    }
+}
+
+// Main object
+object TraitDemo {
+
+    def main(args: Array[String]): Unit = {
+
+        val s = new Student()
+
+        s.display()
+
+        // Calling first trait method
+        s.printDetails()
+
+        // Calling second trait method
+        s.log()
+    }
+}
+
+
+
+Step 3: Understand the important syntax
+trait Printable
+
+
+Creates the first trait.
+trait Logger
+
+
+Creates the second trait.
+class Student extends Printable with Logger
+
+
+This is the most important statement.
+- extends Printable uses the first trait.
+- with Logger mixes in the second trait.
+The Student class gets the functionality of both traits.
+Step 4: Compile and run
+For Scala 2.x:
+scalac TraitDemo.scala
+scala TraitDemo
+
+
+For Scala CLI:
+scala TraitDemo.scala
+
+
+Expected output:
+Student Name: Gowtham
+Department: CSE
+Printing student details
+Student activity logged
+
+
+Trait implementation completed
+5.1 Can traits contain abstract methods?
+Yes. A trait can declare a method without providing its implementation.
+
+Example:
+trait Vehicle {
+
+    def start(): Unit
+
+}
+
+
+A class implements that method:
+class Car extends Vehicle {
+
+    override def start(): Unit = {
+        println("Car started")
+    }
+}
+
+
+This is similar to implementing an interface in Java.
+5.2 Can multiple traits have the same method?
+Yes. Scala supports trait composition and method resolution using linearization.
+
+For example:
+trait A {
+    def show(): Unit = println("Trait A")
+}
+
+trait B {
+    def show(): Unit = println("Trait B")
+}
+
+class Demo extends A with B {
+    override def show(): Unit = {
+        super.show()
+    }
+}
+
+
+Here, super.show() follows Scala's trait linearization rules and invokes the next implementation in the method resolution order.
+
+6. Practical implementation – Abstraction and Polymorphism
+Create:
+nano AbstractionDemo.scala
+
+
+Program:
+
+// Abstract class
+abstract class Shape {
+
+    def area(): Double
+
+}
+
+// Circle class
+class Circle(val radius: Double) extends Shape {
+
+    override def area(): Double = {
+        3.14 * radius * radius
+    }
+}
+
+// Rectangle class
+class Rectangle(val length: Double,
+                val width: Double) extends Shape {
+
+    override def area(): Double = {
+        length * width
+    }
+}
+
+// Main object
+object AbstractionDemo {
+
+    def main(args: Array[String]): Unit = {
+
+        val circle: Shape = new Circle(5)
+
+        val rectangle: Shape =
+            new Rectangle(10, 5)
+
+        println("Circle Area: " + circle.area())
+
+        println("Rectangle Area: " +
+            rectangle.area())
+    }
+}
+
+
+
+Run:
+scala AbstractionDemo.scala
+
+
+Expected output:
+Circle Area: 78.5
+Rectangle Area: 50.0
